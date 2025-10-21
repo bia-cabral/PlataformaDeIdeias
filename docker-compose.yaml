@@ -1,0 +1,33 @@
+services:
+  postgres:
+    image: postgres:16
+    container_name: postgres_db
+    restart: always
+    environment:
+      POSTGRES_USER: root
+      POSTGRES_PASSWORD: root
+      POSTGRES_DB: ideas_db
+    ports:
+      - "5432:5432"
+    volumes:
+      - ./db/script.sql:/docker-entrypoint-initdb.d/script.sql
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U root -d ideas_db"]
+      timeout: 20s
+      retries: 10
+
+  app:
+    build: .
+    container_name: ideas_app
+    restart: always
+    ports:
+      - "3000:3000"
+    depends_on:
+      postgres:
+        condition: service_healthy
+    environment:
+      DB_HOST: postgres
+      DB_USER: root
+      DB_PASS: root
+      DB_NAME: ideas_db
+      DB_PORT: 5432
