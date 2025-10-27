@@ -1,7 +1,7 @@
 -- Create table: user
 CREATE TABLE users (
     id SERIAL PRIMARY KEY,
-    name TEXT NOT NULL,
+    name VARCHAR(254) NOT NULL,
     email VARCHAR(254) UNIQUE NOT NULL,
     password VARCHAR(254) NOT NULL,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
@@ -10,14 +10,14 @@ CREATE TABLE users (
 -- Create table: category
 CREATE TABLE category (
     id SERIAL PRIMARY KEY,
-    name TEXT NOT NULL UNIQUE
+    name VARCHAR(254) NOT NULL UNIQUE
 );
 
 -- Create table: idea
 CREATE TABLE idea (
     id SERIAL PRIMARY KEY,
-    title TEXT NOT NULL,
-    description TEXT NOT NULL,
+    title VARCHAR(50) NOT NULL,
+    description VARCHAR(254) NOT NULL,
     category_id INTEGER NOT NULL,
     user_id INTEGER NOT NULL,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
