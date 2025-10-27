@@ -1,3 +1,5 @@
+CREATE DATABASE IF NOT EXISTS tasks_db;
+
 -- Create table: user
 CREATE TABLE users (
     id SERIAL PRIMARY KEY,
