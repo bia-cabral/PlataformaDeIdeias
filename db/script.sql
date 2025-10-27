@@ -1,4 +1,4 @@
-CREATE DATABASE IF NOT EXISTS tasks_db;
+CREATE DATABASE IF NOT EXISTS ideas_db;
 
 -- Create table: user
 CREATE TABLE users (
