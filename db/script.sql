@@ -1,7 +1,5 @@
-CREATE DATABASE IF NOT EXISTS ideas_db;
-
--- Create table: user
-CREATE TABLE users (
+-- Create table: users
+CREATE TABLE IF NOT EXISTS users (
     id SERIAL PRIMARY KEY,
     name VARCHAR(254) NOT NULL,
     email VARCHAR(254) UNIQUE NOT NULL,
@@ -10,13 +8,13 @@ CREATE TABLE users (
 );
 
 -- Create table: category
-CREATE TABLE category (
+CREATE TABLE IF NOT EXISTS category (
     id SERIAL PRIMARY KEY,
     name VARCHAR(254) NOT NULL UNIQUE
 );
 
 -- Create table: idea
-CREATE TABLE idea (
+CREATE TABLE IF NOT EXISTS idea (
     id SERIAL PRIMARY KEY,
     title VARCHAR(50) NOT NULL,
     description VARCHAR(254) NOT NULL,
@@ -34,7 +32,7 @@ CREATE TABLE idea (
 );
 
 -- Create table: vote
-CREATE TABLE vote (
+CREATE TABLE IF NOT EXISTS vote (
     id SERIAL PRIMARY KEY,
     user_id INTEGER NOT NULL,
     idea_id INTEGER NOT NULL,
@@ -50,3 +48,28 @@ CREATE TABLE vote (
           ON DELETE CASCADE,
     CONSTRAINT uniq_user_idea_vote UNIQUE (user_id, idea_id)
 );
+
+-- Inserir dados de exemplo
+INSERT INTO users (name, email, password) VALUES 
+('João Silva', 'joao@email.com', '$2b$10$example') 
+ON CONFLICT (email) DO NOTHING;
+
+INSERT INTO users (name, email, password) VALUES 
+('Maria Santos', 'maria@email.com', '$2b$10$example2') 
+ON CONFLICT (email) DO NOTHING;
+
+INSERT INTO category (name) VALUES 
+('Tecnologia') 
+ON CONFLICT (name) DO NOTHING;
+
+INSERT INTO category (name) VALUES 
+('Educação') 
+ON CONFLICT (name) DO NOTHING;
+
+INSERT INTO category (name) VALUES 
+('Meio Ambiente') 
+ON CONFLICT (name) DO NOTHING;
+
+INSERT INTO category (name) VALUES 
+('Saúde') 
+ON CONFLICT (name) DO NOTHING;

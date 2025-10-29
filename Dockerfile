@@ -1,19 +1,23 @@
-FROM node:18-slim AS build
+FROM node:22-slim AS build
 
 WORKDIR /usr/src/app
 
 COPY package*.json ./
 
-RUN npm install
+RUN npm ci --omit=dev
 
-COPY . .
-
-FROM node:18-slim
+FROM node:22-slim
 
 WORKDIR /usr/src/app
 
+# Copy node_modules from build stage
 COPY --from=build /usr/src/app/node_modules ./node_modules
-COPY --from=build /usr/src/app .
+
+# Copy package files
+COPY package*.json ./
+
+# Copy application code
+COPY . .
 
 EXPOSE 3000
 
