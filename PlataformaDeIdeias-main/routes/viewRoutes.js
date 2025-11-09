@@ -48,9 +48,15 @@ router.post("/ideas/:id/vote", async (req, res) => {
 
 router.get("/ideas", async (req, res) => {
   try {
-    const response = await fetch(
-      `http://localhost:${process.env.PORT || 3000}/api/ideas`
-    );
+    const searchTerm = req.query.search?.trim();
+    let url = `http://localhost:${process.env.PORT || 3000}/api/ideas`;
+
+    // Adiciona o termo de busca à URL se houver
+    if (searchTerm) {
+      url += `?title=${encodeURIComponent(searchTerm)}`;
+    }
+
+    const response = await fetch(url);
     const data = await response.json();
     const ideas = (data.ideias || []).map((ideia) => ({
       ...ideia,
@@ -58,9 +64,12 @@ router.get("/ideas", async (req, res) => {
       votesCount: ideia.totalVotes ?? 0,
       upvotes: ideia.upvotes ?? 0,
       downvotes: ideia.downvotes ?? 0,
+      category: ideia.category || { name: "Sem categoria" },
     }));
+
     res.render("index", {
       ideas,
+      searchTerm,
       layout: "main",
     });
   } catch (error) {
@@ -71,21 +80,35 @@ router.get("/ideas", async (req, res) => {
   }
 });
 
-router.get("/ideas/new", (req, res) => {
-  res.render("idea_new", { layout: "main" });
+router.get("/ideas/new", async (req, res) => {
+  try {
+    // Busca todas as categorias
+    const response = await fetch(
+      `http://localhost:${process.env.PORT || 3000}/api/categories`
+    );
+    const data = await response.json();
+
+    res.render("idea_new", {
+      categories: data.categories,
+      layout: "main",
+    });
+  } catch (error) {
+    res.render("idea_new", {
+      error: "Erro ao carregar categorias",
+      layout: "main",
+    });
+  }
 });
 
-// Processa formulário de criação de ideia (via views) e encaminha para a API
+// POST /ideas/create - Cria nova ideia
 router.post("/ideas/create", async (req, res) => {
   try {
-    // Extrai userId do cookie (tanto via req.cookies se disponível quanto do header bruto)
     const cookieHeader = req.headers.cookie || "";
     const match = cookieHeader.match(/(^|; )userId=([^;]+)/);
     const userId =
       (req.cookies && req.cookies.userId) || (match ? match[2] : null);
 
     if (!userId) {
-      // não autenticado
       return res.render("auth_login", {
         error: "Você precisa estar logado.",
         layout: "main",
@@ -95,7 +118,7 @@ router.post("/ideas/create", async (req, res) => {
     const body = {
       title: req.body.title,
       description: req.body.description,
-      category_id: req.body.category || null,
+      category_id: req.body.category_id,
     };
 
     const response = await fetch(
@@ -112,13 +135,20 @@ router.post("/ideas/create", async (req, res) => {
 
     if (!response.ok) {
       const err = await response.json().catch(() => ({}));
+
+      const categoriesResponse = await fetch(
+        `http://localhost:${process.env.PORT || 3000}/api/categories`
+      );
+      const categoriesData = await categoriesResponse.json();
+
       return res.render("idea_new", {
         error: err.error || "Erro ao criar ideia",
+        categories: categoriesData.categories,
+        idea: body,
         layout: "main",
       });
     }
 
-    // sucesso
     res.redirect("/pages/ideas");
   } catch (error) {
     res.render("idea_new", { error: "Erro ao criar ideia", layout: "main" });
@@ -127,23 +157,62 @@ router.post("/ideas/create", async (req, res) => {
 
 router.post("/ideas/:id", async (req, res) => {
   try {
+    const cookieHeader = req.headers.cookie || "";
+    const match = cookieHeader.match(/(^|; )userId=([^;]+)/);
+    const userId =
+      (req.cookies && req.cookies.userId) || (match ? match[2] : null);
+
+    if (!userId) {
+      return res.render("auth_login", {
+        error: "Você precisa estar logado.",
+        layout: "main",
+      });
+    }
+
+    // Se for PUT (edição)
+    if (
+      req.query &&
+      req.query._method &&
+      req.query._method.toUpperCase() === "PUT"
+    ) {
+      const body = {
+        title: req.body.title,
+        description: req.body.description,
+        category_id: req.body.category_id,
+      };
+
+      const response = await fetch(
+        `http://localhost:${process.env.PORT || 3000}/api/ideas/${
+          req.params.id
+        }`,
+        {
+          method: "PUT",
+          headers: {
+            "Content-Type": "application/json",
+            "x-user-id": String(userId),
+          },
+          body: JSON.stringify(body),
+        }
+      );
+
+      if (!response.ok) {
+        const err = await response.json().catch(() => ({}));
+        return res.render("idea_edit", {
+          idea: { ...body, id: req.params.id },
+          error: err.error || "Erro ao atualizar ideia",
+          layout: "main",
+        });
+      }
+
+      return res.redirect("/pages/ideas");
+    }
+
+    // Se for DELETE
     if (
       req.query &&
       req.query._method &&
       req.query._method.toUpperCase() === "DELETE"
     ) {
-      const cookieHeader = req.headers.cookie || "";
-      const match = cookieHeader.match(/(^|; )userId=([^;]+)/);
-      const userId =
-        (req.cookies && req.cookies.userId) || (match ? match[2] : null);
-
-      if (!userId) {
-        return res.render("auth_login", {
-          error: "Você precisa estar logado.",
-          layout: "main",
-        });
-      }
-
       const response = await fetch(
         `http://localhost:${process.env.PORT || 3000}/api/ideas/${
           req.params.id
@@ -168,10 +237,18 @@ router.post("/ideas/:id", async (req, res) => {
       return res.redirect("/pages/ideas");
     }
 
+    // Se não for PUT nem DELETE
     res.redirect(`/pages/ideas/${req.params.id}`);
   } catch (error) {
+    if (req.query._method === "PUT") {
+      return res.render("idea_edit", {
+        idea: { ...req.body, id: req.params.id },
+        error: "Erro ao atualizar ideia",
+        layout: "main",
+      });
+    }
     res.redirect(
-      "/pages/ideas?error=" + encodeURIComponent("Erro ao excluir ideia")
+      "/pages/ideas?error=" + encodeURIComponent("Erro ao processar operação")
     );
   }
 });
@@ -202,6 +279,7 @@ router.get("/ideas/:id", async (req, res) => {
       votesCount: ideia.totalVotes ?? 0,
       upvotes: ideia.upvotes ?? 0,
       downvotes: ideia.downvotes ?? 0,
+      categoryName: ideia.category?.name || "Sem categoria",
     };
 
     let voted = false;
@@ -215,7 +293,6 @@ router.get("/ideas/:id", async (req, res) => {
     const canEdit = Boolean(
       userId && String(ideia.user?.id) === String(userId)
     );
-    // Garante que o autor não seja marcado como "voted" (autor não vota na própria ideia)
     if (canEdit) voted = false;
 
     res.render("idea_show", {
@@ -236,17 +313,51 @@ router.get("/ideas/:id", async (req, res) => {
 
 router.get("/ideas/:id/edit", async (req, res) => {
   try {
-    const response = await fetch(
-      `http://localhost:${process.env.PORT || 3000}/api/ideas/${req.params.id}`
-    );
-    const data = await response.json();
+    const cookieHeader = req.headers.cookie || "";
+    const match = cookieHeader.match(/(^|; )userId=([^;]+)/);
+    const userId =
+      (req.cookies && req.cookies.userId) || (match ? match[2] : null);
+
+    if (!userId) {
+      return res.render("auth_login", {
+        error: "Você precisa estar logado.",
+        layout: "main",
+      });
+    }
+
+    // Busca ideia e categorias em paralelo
+    const [ideaResponse, categoriesResponse] = await Promise.all([
+      fetch(
+        `http://localhost:${process.env.PORT || 3000}/api/ideas/${
+          req.params.id
+        }`,
+        {
+          headers: {
+            "x-user-id": String(userId),
+          },
+        }
+      ),
+      fetch(`http://localhost:${process.env.PORT || 3000}/api/categories`),
+    ]);
+
+    if (!ideaResponse.ok) {
+      return res.render("error", {
+        error: "Ideia não encontrada",
+        layout: "main",
+      });
+    }
+
+    const ideaData = await ideaResponse.json();
+    const categoriesData = await categoriesResponse.json();
+
     res.render("idea_edit", {
-      idea: data.idea,
+      idea: ideaData.ideia || ideaData.idea,
+      categories: categoriesData.categories,
       layout: "main",
     });
   } catch (error) {
     res.render("error", {
-      error: "Ideia não encontrada",
+      error: "Erro ao carregar ideia",
       layout: "main",
     });
   }
@@ -319,6 +430,76 @@ router.post("/register", async (req, res) => {
   } catch (error) {
     res.render("auth_register", {
       error: "Erro ao criar conta. Tente novamente.",
+      layout: "main",
+    });
+  }
+});
+
+// Rota para mostrar o perfil do usuário
+router.get("/profile", async (req, res) => {
+  try {
+    const cookieHeader = req.headers.cookie || "";
+    const match = cookieHeader.match(/(^|; )userId=([^;]+)/);
+    const userId =
+      (req.cookies && req.cookies.userId) || (match ? match[2] : null);
+
+    if (!userId) {
+      return res.render("auth_login", {
+        error: "Você precisa estar logado para ver seu perfil.",
+        layout: "main",
+      });
+    }
+
+    // Buscar informações do usuário e suas ideias em paralelo
+    const [userResponse, ideasResponse] = await Promise.all([
+      fetch(
+        `http://localhost:${process.env.PORT || 3000}/api/users/${userId}`,
+        {
+          headers: {
+            "x-user-id": String(userId),
+          },
+        }
+      ),
+      fetch(
+        `http://localhost:${
+          process.env.PORT || 3000
+        }/api/ideas?userId=${userId}`,
+        {
+          headers: {
+            "x-user-id": String(userId),
+          },
+        }
+      ),
+    ]);
+
+    if (!userResponse.ok) {
+      return res.render("error", {
+        error: "Erro ao carregar informações do usuário",
+        layout: "main",
+      });
+    }
+
+    const userData = await userResponse.json();
+    const ideasData = await ideasResponse.json();
+
+    // Processar as ideias para incluir informações de categoria e votos
+    const userIdeas = (ideasData.ideias || []).map((ideia) => ({
+      ...ideia,
+      votesCount: ideia.totalVotes ?? 0,
+      upvotes: ideia.upvotes ?? 0,
+      downvotes: ideia.downvotes ?? 0,
+      category: ideia.category || { name: "Sem categoria" },
+    }));
+
+    res.render("profile", {
+      user: userData.user,
+      ideas: userIdeas,
+      layout: "main",
+    });
+  } catch (error) {
+    console.error("Erro ao carregar perfil:", error);
+    res.render("error", {
+      error: "Erro ao carregar perfil",
       layout: "main",
     });
   }

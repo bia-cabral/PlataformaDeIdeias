@@ -11,6 +11,7 @@ const ideaRoutes = require("../routes/ideaRoutes");
 const userRoutes = require("../routes/userRoutes");
 const categoryRoutes = require("../routes/categoryRoutes");
 const viewRoutes = require("../routes/viewRoutes");
+const userMiddleware = require("./middleware/userMiddleware");
 
 require("./models");
 
@@ -20,7 +21,7 @@ const PORT = process.env.PORT || 3000;
 app.use(cors());
 app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
-
+app.use("/pages", userMiddleware);
 app.use("/pages", viewRoutes);
 
 // Rotas de API
@@ -42,6 +43,7 @@ app.engine(
     helpers: {
       truncate: (str, len = 200) =>
         str && str.length > len ? str.slice(0, len) + "..." : str,
+      eq: (v1, v2) => v1 === v2
     },
   }).engine
 );

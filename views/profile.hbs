@@ -1,9 +1,44 @@
-<h2>Meu Perfil</h2>
-<p>Nome: {{user.name}}</p>
-<p>Email: {{user.email}}</p>
-<h3>Minhas ideias</h3>
-<ul>
-  {{#each myIdeas}}
-    <li><a href="/api/ideas/{{id}}">{{title}}</a> — Votos: {{votesCount}}</li>
-  {{/each}}
-</ul>
+<div class="profile-container">
+  <h2>Meu Perfil</h2>
+  
+  <div class="user-info">
+    <p>Nome: {{user.name}}</p>
+    <p>Email: {{user.email}}</p>
+  </div>
+
+  <div class="my-ideas">
+    <h3>Minhas Ideias</h3>
+    
+    {{#if ideas.length}}
+      <div class="ideas-list">
+        {{#each ideas}}
+          <article class="idea-card">
+            <h4><a href="/pages/ideas/{{id}}">{{title}}</a></h4>
+            <p>{{description}}</p>
+            <div class="meta">
+              <span>Categoria: {{category.name}}</span>
+              <span>Favor: {{upvotes}}</span>
+              <span>Contra: {{downvotes}}</span>
+              <span>Total: {{votesCount}}</span>
+            </div>
+            <div class="actions">
+              <a href="/pages/ideas/{{id}}/edit">Editar</a>
+              <form action="/pages/ideas/{{id}}?_method=DELETE" method="post" style="display:inline">
+                <button type="submit" onclick="return confirm('Tem certeza que deseja excluir esta ideia?')">
+                  Excluir
+                </button>
+              </form>
+            </div>
+          </article>
+        {{/each}}
+      </div>
+    {{else}}
+      <p>Você ainda não criou nenhuma ideia.</p>
+      <a href="/pages/ideas/new">Criar nova ideia</a>
+    {{/if}}
+  </div>
+
+  <div class="actions">
+    <a href="/pages/ideas">Voltar para lista de ideias</a>
+  </div>
+</div>

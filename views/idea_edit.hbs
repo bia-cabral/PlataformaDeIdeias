@@ -1,6 +1,6 @@
 <h2>Editar ideia</h2>
 
-<form id="idea-edit-form" action="/api/ideas/{{idea.id}}?_method=PUT" method="post">
+<form id="idea-edit-form" action="/pages/ideas/{{idea.id}}?_method=PUT" method="post">
   <label>Título
     <input type="text" name="title" value="{{idea.title}}" required>
   </label>
@@ -8,7 +8,12 @@
     <textarea name="description" rows="6" required>{{idea.description}}</textarea>
   </label>
   <label>Categoria
-    <input type="text" name="category" value="{{idea.category}}">
+    <select name="category_id" required>
+      <option value="">Selecione uma categoria</option>
+      {{#each categories}}
+        <option value="{{id}}" {{#if (eq id ../idea.category_id)}}selected{{/if}}>{{name}}</option>
+      {{/each}}
+    </select>
   </label>
   <button type="submit">Salvar</button>
 </form>

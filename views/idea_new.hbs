@@ -1,6 +1,6 @@
 <h2>Nova ideia</h2>
 
-<form id="idea-new-form" action="/pages/ideas/create" method="post">
+<form action="/pages/ideas/create" method="post">
   <label>Título
     <input type="text" name="title" required>
   </label>
@@ -8,8 +8,12 @@
     <textarea name="description" rows="6" required></textarea>
   </label>
   <label>Categoria
-    <input type="text" name="category">
+    <select name="category_id" required>
+      <option value="">Selecione uma categoria</option>
+      {{#each categories}}
+        <option value="{{id}}">{{name}}</option>
+      {{/each}}
+    </select>
   </label>
   <button type="submit">Criar</button>
 </form>
-

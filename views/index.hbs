@@ -1,6 +1,13 @@
 <h2>Ideias</h2>
 
-<a class="btn" href="/pages/ideas/new">Nova ideia</a>
+<div class="actions-bar">
+  <a class="btn" href="/pages/ideas/new">Nova ideia</a>
+  
+  <form action="/pages/ideas" method="get" class="search-form">
+    <input type="text" name="search" placeholder="Pesquisar por título..." value="{{searchTerm}}">
+    <button type="submit">Buscar</button>
+  </form>
+</div>
 
 <div class="ideas-list">
   {{#if ideas}}
@@ -10,6 +17,7 @@
         <p>{{description}}</p>
         <div class="meta">
           <span>Autor: {{authorName}}</span>
+          <span>Categoria: {{category.name}}</span>
           <span>Favor: {{upvotes}}</span>
           <span>Contra: {{downvotes}}</span>
           <span>Total: {{votesCount}}</span>
