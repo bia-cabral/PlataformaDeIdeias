@@ -1,0 +1,29 @@
+<article class="idea-full">
+  <h2>{{idea.title}}</h2>
+  <p>{{idea.description}}</p>
+  <div class="meta">
+    <span>Autor: {{idea.authorName}}</span>
+    <span>Votos: {{votesCount}}</span>
+  </div>
+
+  {{#if user}}
+    {{#unless canEdit}}
+      <form class="vote-form" action="/pages/ideas/{{idea.id}}/vote" method="post" style="display:inline-block;">
+        <input type="hidden" name="vote_value" value="1" />
+        <button type="submit" {{#if voted}}disabled{{/if}}>Votar a favor</button>
+      </form>
+      <form class="vote-form" action="/pages/ideas/{{idea.id}}/vote" method="post" style="display:inline-block;">
+        <input type="hidden" name="vote_value" value="0" />
+        <button type="submit" {{#if voted}}disabled{{/if}}>Votar contra</button>
+      </form>
+    {{/unless}}
+    {{#if canEdit}}
+      <a class="btn" href="/pages/ideas/{{idea.id}}/edit">Editar</a>
+      <form action="/pages/ideas/{{idea.id}}?_method=DELETE" method="post" style="display:inline">
+        <button type="submit">Excluir</button>
+      </form>
+    {{/if}}
+  {{/if}}
+
+  <a href="/pages/ideas">Voltar</a>
+</article>

@@ -1,0 +1,15 @@
+<header class="site-header">
+  <div class="wrap">
+    <h1><a href="/">Plataforma de Ideias</a></h1>
+    <nav>
+      {{#if user}}
+        <span>Olá, {{user.name}}</span>
+  <a href="/pages/profile">Perfil</a>
+  <a id="logout-link" href="/">Sair</a>
+      {{else}}
+        <a href="/pages/login">Entrar</a>
+        <a href="/pages/register">Cadastrar</a>
+      {{/if}}
+    </nav>
+  </div>
+</header>

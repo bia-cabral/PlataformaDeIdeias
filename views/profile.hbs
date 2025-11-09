@@ -1,0 +1,9 @@
+<h2>Meu Perfil</h2>
+<p>Nome: {{user.name}}</p>
+<p>Email: {{user.email}}</p>
+<h3>Minhas ideias</h3>
+<ul>
+  {{#each myIdeas}}
+    <li><a href="/api/ideas/{{id}}">{{title}}</a> — Votos: {{votesCount}}</li>
+  {{/each}}
+</ul>

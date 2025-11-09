@@ -1,0 +1,33 @@
+{
+  "name": "plataformadeideias",
+  "version": "1.0.0",
+  "description": "",
+  "homepage": "https://github.com/bia-cabral/PlataformaDeIdeias#readme",
+  "bugs": {
+    "url": "https://github.com/bia-cabral/PlataformaDeIdeias/issues"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/bia-cabral/PlataformaDeIdeias.git"
+  },
+  "license": "ISC",
+  "author": "",
+  "type": "commonjs",
+  "main": "index.js",
+  "scripts": {
+    "start": "nodemon ./src/index.js"
+  },
+  "dependencies": {
+    "bcrypt": "^6.0.0",
+    "connect-flash": "^0.1.1",
+    "cors": "^2.8.5",
+    "csurf": "^1.11.0",
+    "express": "^5.1.0",
+    "express-handlebars": "^8.0.3",
+    "http-status-codes": "^2.3.0",
+    "method-override": "^3.0.0",
+    "nodemon": "^3.1.10",
+    "pg": "^8.11.3",
+    "sequelize": "^6.37.7"
+  }
+}
