@@ -171,7 +171,7 @@ module.exports = {
 
     try {
       let whereCondition = {};
-      if (category && category !== "all") {
+      if (category && category !== "all" && category.trim() !== "") {
         whereCondition.category_id = parseInt(category, 10);
       }
       if (title.length > 0) {
