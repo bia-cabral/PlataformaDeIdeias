@@ -52,14 +52,27 @@ router.get("/ideas", async (req, res) => {
   try {
     const searchTerm =
       req.query.search?.trim() || req.query.title?.trim() || "";
+    const selectedCategory = req.query.category;
     let url = `http://localhost:${process.env.PORT || 3000}/api/ideas`;
-
+    
     if (searchTerm) {
       url += `?title=${encodeURIComponent(searchTerm)}`;
     }
+    if (selectedCategory) {
+      url += `${searchTerm ? '&' : '?'}category=${encodeURIComponent(selectedCategory)}`;
+    }
 
-    const response = await fetch(url);
-    const data = await response.json();
+    // Buscar ideias e categorias em paralelo
+    const [ideasResponse, categoriesResponse] = await Promise.all([
+      fetch(url),
+      fetch(`http://localhost:${process.env.PORT || 3000}/api/categories`)
+    ]);
+
+    const [data, categoriesData] = await Promise.all([
+      ideasResponse.json(),
+      categoriesResponse.json()
+    ]);
+
     const ideas = (data.ideias || []).map((ideia) => ({
       ...ideia,
       authorName: ideia.user?.name || "Desconhecido",
@@ -72,11 +85,14 @@ router.get("/ideas", async (req, res) => {
     res.render("index", {
       ideas,
       searchTerm,
+      categories: categoriesData.categories,
+      selectedCategory,
       layout: "main",
     });
   } catch (error) {
     res.render("index", {
       error: "Erro ao carregar ideias",
+      categories: [],
       layout: "main",
     });
   }

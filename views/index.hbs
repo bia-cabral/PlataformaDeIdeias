@@ -7,7 +7,7 @@
     <input type="hidden" name="_csrf" value="{{csrfToken}}">
     <input class="form-control" type="text" name="search" placeholder="Pesquisar por título..." value="{{searchTerm}}">
     <select name="category" class="form-select">
-      <option value="" {{#unless selectedCategory}}selected{{/unless}}>Todas as categorias</option>
+      <option value="all" {{#unless selectedCategory}}selected{{/unless}}>Todas as categorias</option>
       {{#each categories}}
         <option value="{{id}}" {{#if (eq ../selectedCategory (string id))}}selected{{/if}}>{{name}}</option>
       {{/each}}
