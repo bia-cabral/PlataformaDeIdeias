@@ -1,0 +1,25 @@
+<h2>Editar ideia</h2>
+
+<form id="idea-edit-form" action="/pages/ideas/{{idea.id}}?_method=PUT" method="post" class="row g-3">
+  <input type="hidden" name="_csrf" value="{{csrfToken}}">
+  <div class="col-12">
+    <label class="form-label">Título</label>
+    <input class="form-control" type="text" name="title" value="{{idea.title}}" required>
+  </div>
+  <div class="col-12">
+    <label class="form-label">Descrição</label>
+    <textarea class="form-control" name="description" rows="6" required>{{idea.description}}</textarea>
+  </div>
+  <div class="col-12">
+    <label class="form-label">Categoria</label>
+    <select class="form-select" name="category_id" required>
+      <option value="">Selecione uma categoria</option>
+      {{#each categories}}
+        <option value="{{id}}" {{#if (eq id ../idea.category_id)}}selected{{/if}}>{{name}}</option>
+      {{/each}}
+    </select>
+  </div>
+  <div class="col-12">
+    <button type="submit" class="btn btn-primary">Salvar</button>
+  </div>
+</form>

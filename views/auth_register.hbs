@@ -1,0 +1,21 @@
+<h2>Cadastrar</h2>
+
+<form id="register-form" action="/pages/register" method="post" class="row g-3">
+  <input type="hidden" name="_csrf" value="{{csrfToken}}">
+  <div class="col-12">
+    <label class="form-label">Nome</label>
+    <input class="form-control" type="text" name="name" required>
+  </div>
+  <div class="col-12">
+    <label class="form-label">Email</label>
+    <input class="form-control" type="email" name="email" required>
+  </div>
+  <div class="col-12">
+    <label class="form-label">Senha</label>
+    <input class="form-control" type="password" name="password" required>
+  </div>
+  <div class="col-12">
+    <button type="submit" class="btn btn-primary">Cadastrar</button>
+  </div>
+</form>
+<p><a href="/pages/login">Voltar ao login</a></p>

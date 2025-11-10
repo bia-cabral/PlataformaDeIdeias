@@ -1,0 +1,25 @@
+<h2>Nova ideia</h2>
+
+<form action="/pages/ideas/create" method="post" class="row g-3">
+  <input type="hidden" name="_csrf" value="{{csrfToken}}">
+  <div class="col-12">
+    <label class="form-label">Título</label>
+    <input class="form-control" type="text" name="title" required>
+  </div>
+  <div class="col-12">
+    <label class="form-label">Descrição</label>
+    <textarea class="form-control" name="description" rows="6" required></textarea>
+  </div>
+  <div class="col-12">
+    <label class="form-label">Categoria</label>
+    <select class="form-select" name="category_id" required>
+      <option value="">Selecione uma categoria</option>
+      {{#each categories}}
+        <option value="{{id}}">{{name}}</option>
+      {{/each}}
+    </select>
+  </div>
+  <div class="col-12">
+    <button type="submit" class="btn btn-primary">Criar</button>
+  </div>
+</form>

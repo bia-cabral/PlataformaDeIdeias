@@ -1,0 +1,6 @@
+body { font-family: Arial, sans-serif; background:#f7f7f7; color:#222; margin:0; }
+.wrap { max-width:960px; margin:0 auto; padding:1rem; }
+.site-header { background:#fff; border-bottom:1px solid #eee; padding:0.5rem 0; }
+.site-header h1 { display:inline-block; margin:0; padding:0; }
+.site-header nav { float:right; }
+.idea-card, .idea-full { background:#fff; padding:1rem; border-radius:6px; margin-bottom:1rem; }

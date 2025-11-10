@@ -4,17 +4,17 @@ const bcrypt = require("bcrypt");
 module.exports = {
   async saveUser(req, res) {
     const { name, email, password } = req.body;
-    
+
     try {
       if (!name || !email || !password) {
         return res.status(400).json({
-          error: "Nome, email e senha são obrigatórios"
+          error: "Nome, email e senha são obrigatórios",
         });
       }
 
       if (password.length < 6) {
         return res.status(400).json({
-          error: "A senha deve ter pelo menos 6 caracteres"
+          error: "A senha deve ter pelo menos 6 caracteres",
         });
       }
 
@@ -24,26 +24,26 @@ module.exports = {
       const user = await User.create({
         name,
         email,
-        password: hashedPassword
+        password: hashedPassword,
       });
-      
+
       const { password: _, ...userWithoutPassword } = user.toJSON();
-      
+
       res.status(201).json({
         message: "Usuário criado com sucesso",
-        user: userWithoutPassword
+        user: userWithoutPassword,
       });
     } catch (err) {
       console.error("Erro ao criar usuário:", err);
-      
-      if (err.name === 'SequelizeUniqueConstraintError') {
+
+      if (err.name === "SequelizeUniqueConstraintError") {
         return res.status(409).json({
-          error: "Este email já está em uso"
+          error: "Este email já está em uso",
         });
       }
-      
+
       res.status(500).json({
-        error: "Erro interno do servidor"
+        error: "Erro interno do servidor",
       });
     }
   },
@@ -52,24 +52,24 @@ module.exports = {
     const { name, email, currentPassword, newPassword } = req.body;
     const userId = req.params.id;
     const authenticatedUserId = req.user?.id;
-    
+
     try {
       if (parseInt(userId) !== authenticatedUserId) {
         return res.status(403).json({
-          error: "Você só pode editar seu próprio perfil"
+          error: "Você só pode editar seu próprio perfil",
         });
       }
 
       const user = await User.findByPk(userId);
       if (!user) {
         return res.status(404).json({
-          error: "Usuário não encontrado"
+          error: "Usuário não encontrado",
         });
       }
 
       if (!name || !email) {
         return res.status(400).json({
-          error: "Nome e email são obrigatórios"
+          error: "Nome e email são obrigatórios",
         });
       }
 
@@ -78,43 +78,46 @@ module.exports = {
       if (newPassword) {
         if (!currentPassword) {
           return res.status(400).json({
-            error: "Senha atual é obrigatória para alterar a senha"
+            error: "Senha atual é obrigatória para alterar a senha",
           });
         }
 
-        const isCurrentPasswordValid = await bcrypt.compare(currentPassword, user.password);
+        const isCurrentPasswordValid = await bcrypt.compare(
+          currentPassword,
+          user.password
+        );
         if (!isCurrentPasswordValid) {
           return res.status(400).json({
-            error: "Senha atual incorreta"
+            error: "Senha atual incorreta",
           });
         }
 
         if (newPassword.length < 6) {
           return res.status(400).json({
-            error: "A nova senha deve ter pelo menos 6 caracteres"
+            error: "A nova senha deve ter pelo menos 6 caracteres",
           });
         }
 
         const saltRounds = 10;
         updateData.password = await bcrypt.hash(newPassword, saltRounds);
       }
-      
+
       await User.update(updateData, { where: { id: userId } });
-      
+
       res.status(200).json({
-        message: "Usuário atualizado com sucesso"
+        message: "Usuário atualizado com sucesso",
       });
     } catch (err) {
       console.error("Erro ao atualizar usuário:", err);
-      
-      if (err.name === 'SequelizeUniqueConstraintError') {
+
+      if (err.name === "SequelizeUniqueConstraintError") {
         return res.status(409).json({
-          error: "Este email já está em uso"
+          error: "Este email já está em uso",
         });
       }
-      
+
       res.status(500).json({
-        error: "Erro interno do servidor"
+        error: "Erro interno do servidor",
       });
     }
   },
@@ -123,81 +126,109 @@ module.exports = {
     const userId = req.params.id;
     const authenticatedUserId = req.user?.id;
     const { password } = req.body;
-    
+
     try {
       if (parseInt(userId) !== authenticatedUserId) {
         return res.status(403).json({
-          error: "Você só pode deletar sua própria conta"
+          error: "Você só pode deletar sua própria conta",
         });
       }
 
       const user = await User.findByPk(userId);
       if (!user) {
         return res.status(404).json({
-          error: "Usuário não encontrado"
+          error: "Usuário não encontrado",
         });
       }
 
       if (!password) {
         return res.status(400).json({
-          error: "Senha é obrigatória para excluir a conta"
+          error: "Senha é obrigatória para excluir a conta",
         });
       }
 
       const isPasswordValid = await bcrypt.compare(password, user.password);
       if (!isPasswordValid) {
         return res.status(400).json({
-          error: "Senha incorreta"
+          error: "Senha incorreta",
         });
       }
 
       await User.destroy({ where: { id: userId } });
-      
+
       res.status(200).json({
-        message: "Conta excluída com sucesso"
+        message: "Conta excluída com sucesso",
       });
     } catch (err) {
       console.error("Erro ao deletar usuário:", err);
       res.status(500).json({
-        error: "Erro interno do servidor"
+        error: "Erro interno do servidor",
       });
     }
   },
 
   async loginUser(req, res) {
     const { email, password } = req.body;
-    
+
     try {
+      console.log("Login attempt for email:", email);
+
+      // Validação dos campos
       if (!email || !password) {
+        console.log("Missing email or password");
         return res.status(400).json({
-          error: "Email e senha são obrigatórios"
+          error: "Email e senha são obrigatórios",
         });
       }
 
-      const user = await User.findOne({ where: { email } });
+      // Busca o usuário pelo email
+      console.log("Searching for user in database...");
+      const user = await User.findOne({
+        where: { email },
+        attributes: ["id", "name", "email", "password"],
+      });
+
+      console.log("Database query complete");
+      console.log(
+        "User found:",
+        user
+          ? { id: user.id, email: user.email, name: user.name }
+          : "No user found"
+      );
+
+      // Verifica se o usuário existe
       if (!user) {
+        console.log("User not found with email:", email);
         return res.status(401).json({
-          error: "Credenciais inválidas"
+          error: "Credenciais inválidas",
         });
       }
 
+      // Verifica a senha
+      console.log("Comparing passwords...");
       const isPasswordValid = await bcrypt.compare(password, user.password);
+      console.log("Password validation result:", isPasswordValid);
+
       if (!isPasswordValid) {
+        console.log("Invalid password for user:", email);
         return res.status(401).json({
-          error: "Credenciais inválidas"
+          error: "Credenciais inválidas",
         });
       }
 
-      const { password: _, ...userWithoutPassword } = user.toJSON();
-      
+      // Remove a senha antes de enviar a resposta
+      const userObject = user.toJSON();
+      delete userObject.password;
+
+      // Retorna os dados do usuário
       res.status(200).json({
         message: "Login realizado com sucesso",
-        user: userWithoutPassword
+        user: userObject,
       });
     } catch (err) {
       console.error("Erro no login:", err);
       res.status(500).json({
-        error: "Erro interno do servidor"
+        error: "Erro interno do servidor",
       });
     }
   },
@@ -205,17 +236,17 @@ module.exports = {
   async getUsers(req, res) {
     try {
       const users = await User.findAll({
-        attributes: ['id', 'name', 'email', 'created_at'],
-        order: [['created_at', 'DESC']]
+        attributes: ["id", "name", "email", "created_at"],
+        order: [["created_at", "DESC"]],
       });
 
       res.status(200).json({
-        users
+        users,
       });
     } catch (err) {
       console.error("Erro ao buscar usuários:", err);
       res.status(500).json({
-        error: "Erro interno do servidor"
+        error: "Erro interno do servidor",
       });
     }
   },
@@ -223,28 +254,28 @@ module.exports = {
   async getUserProfile(req, res) {
     const userId = req.params.id;
     const authenticatedUserId = req.user?.id;
-    
+
     try {
-      const attributes = ['id', 'name', 'email', 'created_at'];
-      
+      const attributes = ["id", "name", "email", "created_at"];
+
       if (parseInt(userId) === authenticatedUserId) {
       }
 
       const user = await User.findByPk(userId, { attributes });
       if (!user) {
         return res.status(404).json({
-          error: "Usuário não encontrado"
+          error: "Usuário não encontrado",
         });
       }
 
       res.status(200).json({
-        user
+        user,
       });
     } catch (err) {
       console.error("Erro ao buscar usuário:", err);
       res.status(500).json({
-        error: "Erro interno do servidor"
+        error: "Erro interno do servidor",
       });
     }
-  }
+  },
 };

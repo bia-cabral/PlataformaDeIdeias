@@ -1,25 +1,25 @@
-const authMiddleware = (req, res, next) => {  
-  const userId = req.headers['x-user-id'];
-  
+const authMiddleware = (req, res, next) => {
+  const userId = req.headers["x-user-id"];
+
   if (!userId) {
     return res.status(401).json({
-      error: "Token de autenticação não fornecido"
+      error: "Token de autenticação não fornecido",
     });
   }
 
   req.user = {
-    id: parseInt(userId)
+    id: parseInt(userId, 10),
   };
 
   next();
 };
 
 const optionalAuthMiddleware = (req, res, next) => {
-  const userId = req.headers['x-user-id'];
-  
+  const userId = req.headers["x-user-id"];
+
   if (userId) {
     req.user = {
-      id: parseInt(userId)
+      id: parseInt(userId, 10),
     };
   }
 
@@ -28,5 +28,5 @@ const optionalAuthMiddleware = (req, res, next) => {
 
 module.exports = {
   authMiddleware,
-  optionalAuthMiddleware
+  optionalAuthMiddleware,
 };
